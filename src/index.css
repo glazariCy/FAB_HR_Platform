@@ -6,3 +6,95 @@ body {
   color: #1f2933;
   background: #fff;
 }
+/* Shared buttons and messages, used by several pages */
+.btn-primary {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 6px;
+  background: #1f3a5f;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-primary:hover:not(:disabled) { background: #2b4f7e; }
+
+.btn-secondary {
+  padding: 10px 24px;
+  border: 1px solid #c4ccd6;
+  border-radius: 6px;
+  background: #fff;
+  color: #2d3a48;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-secondary:hover:not(:disabled) { background: #f4f6f9; }
+
+.btn-primary:disabled,
+.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Success / error messages */
+.alert {
+  margin: 0;
+  padding: 12px 16px;
+  border: 1px solid;
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.alert--success {
+  border-color: #1e7e34;
+  background: #e8f5e9;
+  color: #145523;
+}
+
+.alert--error {
+  border-color: #c62828;
+  background: #fdecea;
+  color: #8e1c1c;
+}
+
+.alert a { color: inherit; font-weight: 600; }
+
+/* Short status line under a page title (loading, empty, result count) */
+.page-message {
+  margin: 0 0 16px;
+  color: #4a5563;
+}
+
+.page-error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* A button that looks like a link, for small secondary actions */
+.btn-link {
+  padding: 0;
+  border: none;
+  background: none;
+  color: #1f3a5f;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.list-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.list-toolbar .page-message { margin: 0; }
