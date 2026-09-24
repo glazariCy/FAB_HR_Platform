@@ -1,0 +1,65 @@
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  background: #1f3a5f;
+  color: #fff;
+}
+
+.topbar-brand { display: flex; align-items: baseline; gap: 12px; }
+.topbar-logo { font-weight: 700; font-size: 18px; }
+.topbar-company { font-size: 14px; opacity: 0.8; }
+
+.app-body {
+  flex: 1;
+  display: flex;
+}
+
+.sidebar {
+  width: 240px;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 0;
+  background: #f4f6f9;
+  border-right: 1px solid #dde2e8;
+}
+
+.sidebar-section {
+  margin: 0 0 8px;
+  padding: 0 24px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7785;
+}
+
+.sidebar-link {
+  padding: 10px 24px;
+  border-left: 3px solid transparent;
+  color: #2d3a48;
+  text-decoration: none;
+}
+
+.sidebar-link:hover { background: #e8ecf1; }
+
+.sidebar-link.active {
+  border-left-color: #1f3a5f;
+  background: #e1e9f5;
+  color: #1f3a5f;
+  font-weight: 600;
+}
+
+.app-content {
+  flex: 1;
+  padding: 32px;
+}
+
