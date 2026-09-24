@@ -1,0 +1,46 @@
+# CI pipeline for the FAB HR certificate portal (organization standard: Azure Pipelines).
+# On every push to main and every pull request into main:
+# install dependencies, lint, build, and publish the built site as an artifact.
+
+trigger:
+  branches:
+    include:
+      - main
+
+pr:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+  - task: NodeTool@0
+    displayName: Use Node.js 24
+    inputs:
+      versionSpec: '24.x'
+
+  # npm ci installs the exact versions from package-lock.json (reproducible builds)
+  - script: npm ci
+    displayName: Install dependencies
+
+  - script: npm run lint
+    displayName: Lint
+
+  # Vite bakes the VITE_* values into the built JavaScript at build time.
+  # They come from pipeline variables (the API keys are marked secret in Azure DevOps),
+  # because .env is never committed. Secret variables must be passed to a script explicitly.
+  - script: npm run build
+    displayName: Build
+    env:
+      VITE_API_BASE_URL: $(VITE_API_BASE_URL)
+      VITE_PRIMARY_API_KEY: $(VITE_PRIMARY_API_KEY)
+      VITE_SECONDARY_API_KEY: $(VITE_SECONDARY_API_KEY)
+
+  # Keep the built site (dist/) so it can be downloaded or deployed later
+  - task: PublishPipelineArtifact@1
+    displayName: Publish build output
+    inputs:
+      targetPath: dist
+      artifact: web
