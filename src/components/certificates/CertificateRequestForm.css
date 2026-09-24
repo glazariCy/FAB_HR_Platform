@@ -115,3 +115,27 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* Submit result messages (F02-R04) */
+.alert {
+  margin: 0;
+  padding: 12px 16px;
+  border: 1px solid;
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.alert--success {
+  border-color: #1e7e34;
+  background: #e8f5e9;
+  color: #145523;
+}
+
+.alert--error {
+  border-color: #c62828;
+  background: #fdecea;
+  color: #8e1c1c;
+}
+
+.alert a { color: inherit; font-weight: 600; }
