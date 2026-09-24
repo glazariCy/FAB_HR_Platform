@@ -22,10 +22,10 @@ pool:
   name: Default
 
 steps:
-  - task: NodeTool@0
+  - task: UseNode@1
     displayName: Use Node.js 24
     inputs:
-      versionSpec: '24.x'
+      version: '24.x'
 
   # npm ci installs the exact versions from package-lock.json (reproducible builds)
   - script: npm ci
