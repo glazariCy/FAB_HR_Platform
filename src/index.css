@@ -98,3 +98,7 @@ body {
 }
 
 .list-toolbar .page-message { margin: 0; }
+
+@media (max-width: 768px) {
+  h1 { font-size: 24px; }
+}

@@ -79,6 +79,7 @@ function CertificateRequestsList() {
 
   return (
     <>
+      <title>Requests List · FAB HR</title>
       <h1>Certificate Requests</h1>
 
       {loadStatus === 'loading' && (
