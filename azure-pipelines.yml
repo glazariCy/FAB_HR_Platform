@@ -1,6 +1,7 @@
-# CI pipeline for the FAB HR certificate portal (organization standard: Azure Pipelines).
+# CI/CD pipeline for the FAB HR certificate portal (organization standard: Azure Pipelines).
 # On every push to main and every pull request into main:
 # install dependencies, lint, build, and publish the built site as an artifact.
+# On main only: deploy the built site to an Azure Storage static website (T-01).
 
 trigger:
   branches:
@@ -34,14 +35,14 @@ steps:
     displayName: Lint
 
   # Vite bakes the VITE_* values into the built JavaScript at build time.
-  # They come from pipeline variables (the API keys are marked secret in Azure DevOps),
-  # because .env is never committed. Secret variables must be passed to a script explicitly.
+  # The API keys are deliberately NOT passed here: this build is published on a public URL,
+  # and the mock APIs only accept calls from http://localhost:3000 (CORS) anyway,
+  # so including the keys would expose them without making the online version work.
+  # (Secret variables would have to be mapped explicitly under env: to reach this script.)
   - script: npm run build
     displayName: Build
     env:
       VITE_API_BASE_URL: $(VITE_API_BASE_URL)
-      VITE_PRIMARY_API_KEY: $(VITE_PRIMARY_API_KEY)
-      VITE_SECONDARY_API_KEY: $(VITE_SECONDARY_API_KEY)
 
   # Keep the built site (dist/) so it can be downloaded or deployed later
   - task: PublishPipelineArtifact@1
@@ -49,3 +50,12 @@ steps:
     inputs:
       targetPath: dist
       artifact: web
+
+  # T-01: upload dist/ to the Azure Storage static website, only for main (never for pull requests).
+  # (Azure Static Web Apps is not available in the regions allowed by the student subscription.)
+  # The storage connection string is a secret pipeline variable.
+  - script: node scripts/deploy-to-storage.mjs dist
+    displayName: Deploy to Azure Storage static website
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    env:
+      AZURE_STORAGE_CONNECTION_STRING: $(AZURE_STORAGE_CONNECTION_STRING)
