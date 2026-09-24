@@ -1,6 +1,7 @@
 // All communication with the Zalex certificate API lives here
 const BASE_URL = import.meta.env.VITE_API_BASE_URL
 const POST_API_KEY = import.meta.env.VITE_PRIMARY_API_KEY
+const GET_API_KEY = import.meta.env.VITE_SECONDARY_API_KEY
 
 export function toApiDate(isoDate) {
   const [year, month, day] = isoDate.split('-')
@@ -32,6 +33,25 @@ export async function requestCertificate(values) {
   //F02:R04
   if (data.responce !== 'Ok') {
     throw new Error('The certificate request was not accepted.')
+  }
+
+  return data
+}
+
+// F04-R04: get all the user's certificate requests.
+// `signal` lets the caller cancel the request (e.g. when the user leaves the page).
+export async function getRequests({ signal } = {}) {
+  const url = `${BASE_URL}/request-list?subscription-key=${encodeURIComponent(GET_API_KEY)}`
+  const response = await fetch(url, { signal })
+
+  if (!response.ok) {
+    throw new Error(`Request failed with status ${response.status}`)
+  }
+
+  const data = await response.json()
+
+  if (!Array.isArray(data)) {
+    throw new Error('Unexpected response: expected a list of requests.')
   }
 
   return data
