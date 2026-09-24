@@ -1,16 +1,15 @@
 // Helpers for displaying and sorting the certificate requests list (F04).
 
-// Agreed workflow order for sorting by status. Unknown statuses go after these.
+// Request statuses
 const STATUS_ORDER = ['New', 'Under Review', 'Pending', 'Done']
 
-// The API sends dates as 'M/D/YYYY' strings, e.g. '12/9/2022' = 9 December 2022.
-// Sorting those as text would be wrong ('12/9/2022' < '2/28/2023'), so convert to a real Date.
+
 export function parseApiDate(apiDate) {
   const [month, day, year] = apiDate.split('/').map(Number)
-  return new Date(year, month - 1, day) // months are 0-based in JavaScript
+  return new Date(year, month - 1, day) 
 }
 
-// '12/9/2022' -> '9 Dec 2022', which can't be misread as 12 September
+// '12/9/2022' -> '9 Dec 2022'
 export function formatApiDate(apiDate) {
   return parseApiDate(apiDate).toLocaleDateString('en-GB', {
     day: 'numeric',
@@ -35,5 +34,32 @@ export function sortRequests(requests, sort) {
         ? parseApiDate(a.issued_on) - parseApiDate(b.issued_on)
         : statusRank(a.status) - statusRank(b.status)
     return difference * direction
+  })
+}
+
+// Status dropdown options
+export function getStatusOptions(requests) {
+  const uniqueStatuses = [...new Set(requests.map((request) => request.status))]
+  return uniqueStatuses.sort((a, b) => statusRank(a) - statusRank(b))
+}
+
+// F04-R03: keeps the requests that match ALL filters. Empty filters are ignored.
+export function filterRequests(requests, filters) {
+  const referenceNo = filters.reference_no.trim()
+  // 'Earth  embassy' -> ['earth', 'embassy']
+  const addressWords = filters.address_to.trim().toLowerCase().split(/\s+/).filter(Boolean)
+
+  return requests.filter((request) => {
+    // Reference No.: full match 
+    if (referenceNo !== '' && String(request.reference_no) !== referenceNo) return false
+
+    // Address to: partial words are allowed ('emb' matches 'Embassy')
+    const address = request.address_to.toLowerCase()
+    if (!addressWords.every((word) => address.includes(word))) return false
+
+    // Status: full match
+    if (filters.status !== '' && request.status !== filters.status) return false
+
+    return true
   })
 }

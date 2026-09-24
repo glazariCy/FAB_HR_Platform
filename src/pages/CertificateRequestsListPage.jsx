@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { getRequests } from '../api/certificateApi'
-import { sortRequests } from '../utils/requests'
+import { filterRequests, getStatusOptions, sortRequests } from '../utils/requests'
 import RequestsTable from '../components/requests/RequestsTable'
 
 // Default: newest requests first
 const DEFAULT_SORT = { key: 'issued_on', direction: 'desc' }
+const EMPTY_FILTERS = { reference_no: '', address_to: '', status: '' }
 
 function CertificateRequestsList() {
   const [requests, setRequests] = useState([])
@@ -14,6 +15,7 @@ function CertificateRequestsList() {
   // Changing this number re-runs the effect below, used by "Try again"
   const [reloadKey, setReloadKey] = useState(0)
   const [sort, setSort] = useState(DEFAULT_SORT)
+  const [filters, setFilters] = useState(EMPTY_FILTERS)
 
   // F04-R04: load the requests when the page opens
   useEffect(() => {
@@ -53,8 +55,27 @@ function CertificateRequestsList() {
     )
   }
 
-  // The sorted list is calculated from state on every render, not stored separately
-  const sortedRequests = sortRequests(requests, sort)
+  // Same pattern as the request form: one handler for all filters, using the input's `name`
+  function handleFilterChange(event) {
+    const { name, value } = event.target
+    setFilters((prev) => ({ ...prev, [name]: value }))
+  }
+
+  function handleClearFilters() {
+    setFilters(EMPTY_FILTERS)
+  }
+
+  // Empties a single filter and keeps the others
+  function handleClearFilter(name) {
+    setFilters((prev) => ({ ...prev, [name]: '' }))
+  }
+
+  // Calculated from state on every render, not stored separately: filter first, then sort
+  const filteredRequests = filterRequests(requests, filters)
+  const visibleRequests = sortRequests(filteredRequests, sort)
+  const statusOptions = getStatusOptions(requests)
+  const hasActiveFilters = Object.values(filters).some((value) => value.trim() !== '')
+  const countLabel = (count) => `${count} ${count === 1 ? 'request' : 'requests'}`
 
   return (
     <>
@@ -82,10 +103,29 @@ function CertificateRequestsList() {
 
       {loadStatus === 'success' && requests.length > 0 && (
         <>
-          <p className="page-message">
-            {requests.length} {requests.length === 1 ? 'request' : 'requests'}
-          </p>
-          <RequestsTable requests={sortedRequests} sort={sort} onSortChange={handleSortChange} />
+          <div className="list-toolbar">
+            {/* role="status" so screen readers announce the new count while filtering */}
+            <p className="page-message" role="status">
+              {hasActiveFilters
+                ? `Showing ${filteredRequests.length} of ${countLabel(requests.length)}`
+                : countLabel(requests.length)}
+            </p>
+            {hasActiveFilters && (
+              <button type="button" className="btn-link" onClick={handleClearFilters}>
+                Clear filters
+              </button>
+            )}
+          </div>
+          <RequestsTable
+            requests={visibleRequests}
+            sort={sort}
+            onSortChange={handleSortChange}
+            filters={filters}
+            onFilterChange={handleFilterChange}
+            statusOptions={statusOptions}
+            onClearFilters={handleClearFilters}
+            onClearFilter={handleClearFilter}
+          />
         </>
       )}
     </>

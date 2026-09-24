@@ -76,3 +76,25 @@ body {
   justify-content: space-between;
   gap: 12px;
 }
+
+/* A button that looks like a link, for small secondary actions */
+.btn-link {
+  padding: 0;
+  border: none;
+  background: none;
+  color: #1f3a5f;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.list-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.list-toolbar .page-message { margin: 0; }

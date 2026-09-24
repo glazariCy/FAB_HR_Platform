@@ -64,3 +64,95 @@
 .status-badge--under-review { background: #fff4d6; color: #7a5300; }
 .status-badge--pending { background: #f1e8fb; color: #5b2c86; }
 .status-badge--done { background: #e8f5e9; color: #145523; }
+
+/* In-line filter row (F04-R03) */
+.filter-row td {
+  padding: 8px 16px;
+  background: #fafbfc;
+}
+
+.filter-row input,
+.filter-row textarea,
+.filter-row select {
+  width: 100%;
+  min-width: 120px;
+  padding: 6px 8px;
+  border: 1px solid #c4ccd6;
+  border-radius: 4px;
+  background: #fff;
+  font: inherit;
+  font-size: 13px;
+}
+
+.filter-row input:focus,
+.filter-row textarea:focus,
+.filter-row select:focus {
+  outline: 2px solid #1f3a5f;
+  outline-offset: 1px;
+  border-color: #1f3a5f;
+}
+
+.no-results {
+  padding: 32px 16px;
+  text-align: center;
+  color: #4a5563;
+}
+
+/* Search icon inside the text filters */
+.filter-input { position: relative; }
+
+.filter-input .filter-icon {
+  position: absolute;
+  top: 16px; /* centred on the first line, stays there when the box grows */
+  left: 9px;
+  transform: translateY(-50%);
+  color: #6b7785;
+  pointer-events: none; /* clicks go through to the input */
+}
+
+.filter-input textarea {
+  display: block;
+  padding-left: 28px; /* leave room for the search icon */
+  padding-right: 28px; /* ...and for the × button */
+  line-height: 1.4;
+  resize: none; /* height is set automatically by AutoGrowInput */
+  overflow: hidden;
+}
+
+/* Narrower Reference No. and Address to columns */
+.requests-table .col-reference { width: 130px; }
+.requests-table .col-address { width: 220px; }
+
+/* Long addresses wrap onto several lines instead of widening the column */
+.requests-table td.col-address { overflow-wrap: anywhere; }
+
+/* Let the text filters shrink to their narrower columns */
+.filter-row .filter-input textarea { min-width: 0; }
+
+/* × button that clears one filter */
+.filter-clear {
+  position: absolute;
+  top: 16px; /* level with the first line, like the search icon */
+  right: 6px;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #6b7785;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.filter-clear:hover { background: #e6eaef; color: #1f2933; }
+.filter-clear:focus-visible { outline: 2px solid #1f3a5f; outline-offset: 1px; }
+
+/* Status dropdown: put the × just left of the dropdown arrow */
+.filter-input--select select { padding-right: 52px; }
+.filter-input--select .filter-clear { right: 26px; }

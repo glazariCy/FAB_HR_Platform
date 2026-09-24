@@ -39,7 +39,6 @@ export async function requestCertificate(values) {
 }
 
 // F04-R04: get all the user's certificate requests.
-// `signal` lets the caller cancel the request (e.g. when the user leaves the page).
 export async function getRequests({ signal } = {}) {
   const url = `${BASE_URL}/request-list?subscription-key=${encodeURIComponent(GET_API_KEY)}`
   const response = await fetch(url, { signal })
