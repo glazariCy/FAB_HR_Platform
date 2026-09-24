@@ -12,8 +12,13 @@ pr:
     include:
       - main
 
+# Self-hosted agent (my own PC, registered in the "Default" agent pool),
+# used while the free Microsoft-hosted build grant is pending.
+# To switch back to a Microsoft-hosted machine, replace these two lines with:
+#   pool:
+#     vmImage: ubuntu-latest
 pool:
-  vmImage: ubuntu-latest
+  name: Default
 
 steps:
   - task: NodeTool@0
