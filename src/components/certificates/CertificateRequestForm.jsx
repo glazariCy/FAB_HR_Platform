@@ -4,6 +4,7 @@ import { requestCertificate } from '../../api/certificateApi'
 import { getTodayString, validateCertificate } from '../../utils/validateCertificate'
 import FormField from './FormField'
 import LeavePageDialog from './LeavePageDialog'
+import Toast from '../common/Toast'
 import './CertificateRequestForm.css'
 
 const initialValues = {
@@ -58,8 +59,6 @@ function CertificateRequestForm() {
   function handleChange(event) {
     const { name, value } = event.target
     setValues((prev) => ({ ...prev, [name]: value }))
-    // Hide the previous success/error message once the user starts editing again
-    if (submitStatus !== 'idle') setSubmitStatus('idle')
   }
 
   // A field counts as touched once the user leaves it
@@ -86,6 +85,9 @@ function CertificateRequestForm() {
       setSubmitStatus('error')
     }
   }
+
+  // Closes the success/error notification.
+  const closeToast = useCallback(() => setSubmitStatus('idle'), [])
 
   // Reset every field and hide all ✓/✕ statuses
   function handleClear() {
@@ -144,19 +146,21 @@ function CertificateRequestForm() {
             <p className="form-hint">Complete all fields correctly to enable Submit.</p>
           )}
         </div>
-
-        {submitStatus === 'success' && (
-          <p className="alert alert--success" role="status">
-            Your certificate request was submitted successfully.{' '}
-            <Link to="/requests">View your requests</Link>
-          </p>
-        )}
-        {submitStatus === 'error' && (
-          <p className="alert alert--error" role="alert">
-            Something went wrong and your request was not submitted. Your information is still here, please try again.
-          </p>
-        )}
       </form>
+
+      {/* F02-R04: result of the submit, as a floating notification */}
+      {submitStatus === 'success' && (
+        <Toast type="success" autoCloseMs={5000} onClose={closeToast}> //message shows for 5 seconds
+          Your certificate request was submitted successfully.{' '}
+          <Link to="/requests">View your requests</Link>
+        </Toast>
+      )}
+      {/* Errors stay until the user closes them, so they have time to read them */}
+      {submitStatus === 'error' && (
+        <Toast type="error" onClose={closeToast}>
+          Something went wrong and your request was not submitted. Your information is still here, please try again.
+        </Toast>
+      )}
 
       <LeavePageDialog
         open={blocker.state === 'blocked'}
