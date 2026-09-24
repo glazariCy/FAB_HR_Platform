@@ -53,8 +53,20 @@ if (dryRun) {
   process.exit(0)
 }
 
-const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING
-if (!connectionString) throw new Error('AZURE_STORAGE_CONNECTION_STRING is not set.')
+const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING?.trim()
+// If the pipeline variable doesn't exist, Azure DevOps passes the literal text "$(AZURE_STORAGE_CONNECTION_STRING)"
+if (!connectionString || connectionString.startsWith('$(')) {
+  throw new Error(
+    'AZURE_STORAGE_CONNECTION_STRING is not set. Add it as a secret variable to the pipeline (check the exact name).',
+  )
+}
+// A real connection string looks like: DefaultEndpointsProtocol=https;AccountName=...;AccountKey=...;EndpointSuffix=core.windows.net
+if (!/AccountName=/.test(connectionString) || !/AccountKey=/.test(connectionString)) {
+  throw new Error(
+    'AZURE_STORAGE_CONNECTION_STRING does not look like a storage connection string. ' +
+      'Copy the full "Connection string" (not just the "Key") from Storage account > Access keys.',
+  )
+}
 
 const container = BlobServiceClient.fromConnectionString(connectionString).getContainerClient('$web')
 
