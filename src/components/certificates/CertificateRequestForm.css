@@ -13,13 +13,19 @@
 
 .form-field label { font-weight: 600; font-size: 14px; }
 
+/* Positioning context for the ✓/✕ icon */
+.input-wrapper { position: relative; }
+
 .form-field input,
 .form-field textarea {
-  padding: 10px 12px;
+  width: 100%;
+  padding: 10px 40px 10px 12px; /* extra right padding leaves room for the icon */
   border: 1px solid #c4ccd6;
   border-radius: 6px;
   font: inherit;
 }
+
+.form-field textarea { resize: vertical; }
 
 .form-field input:focus,
 .form-field textarea:focus {
@@ -28,8 +34,57 @@
   border-color: #1f3a5f;
 }
 
+/* Status icon, sits inside the input's right padding */
+.field-icon {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  font-weight: 700;
+  line-height: 1.5;
+  pointer-events: none; /* clicks go through to the input */
+}
+
+.field-icon--valid { color: #1e7e34; }
+.field-icon--invalid { color: #c62828; }
+
+/* Valid: green border */
+.form-field--valid input,
+.form-field--valid textarea,
+.form-field--valid input:focus,
+.form-field--valid textarea:focus {
+  border-color: #1e7e34;
+  outline-color: #1e7e34;
+}
+
+/* Invalid: red border */
+.form-field--invalid input,
+.form-field--invalid textarea,
+.form-field--invalid input:focus,
+.form-field--invalid textarea:focus {
+  border-color: #c62828;
+  outline-color: #c62828;
+}
+
+.field-error {
+  margin: 0;
+  color: #c62828;
+  font-size: 13px;
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.form-hint {
+  margin: 0;
+  font-size: 13px;
+  color: #6b7785;
+}
+
 .btn-primary {
-  align-self: flex-start;
   padding: 10px 24px;
   border: none;
   border-radius: 6px;
@@ -40,4 +95,23 @@
   cursor: pointer;
 }
 
-.btn-primary:hover { background: #2b4f7e; }
+.btn-primary:hover:not(:disabled) { background: #2b4f7e; }
+
+.btn-secondary {
+  padding: 10px 24px;
+  border: 1px solid #c4ccd6;
+  border-radius: 6px;
+  background: #fff;
+  color: #2d3a48;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-secondary:hover:not(:disabled) { background: #f4f6f9; }
+
+.btn-primary:disabled,
+.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
