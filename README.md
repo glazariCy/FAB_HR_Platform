@@ -4,6 +4,8 @@ A React web application that lets Zalex Inc. employees **request a certificate o
 
 Built for the *Junior FE Developer Case Study*.
 
+**Live site:** https://fabhrportal26.z1.web.core.windows.net/ (the interface only: the mock APIs accept calls from `localhost:3000` only, so run it locally for the full experience; see [Deployment](#deployment-t-01)).
+
 ---
 
 ## Features
@@ -19,7 +21,8 @@ Built for the *Junior FE Developer Case Study*.
 | **F04-R02** Sorting | Click the *Issued on* or *Status* header to sort ascending / descending |
 | **F04-R03** Filtering *(optional)* | In-line filter row: Reference No. (full match), Address to (contains words), Status (full match); filters combine, and each can be cleared on its own |
 | **F04-R04** Load from API | `GET /request-list` when the page opens, with loading, error (with *Try again*) and empty states |
-| **CI/CD** (Azure Pipeline) | `azure-pipelines.yml`: install, lint, build and publish the built site on every push / PR to `main` |
+| **CI/CD** (Azure Pipeline) | `azure-pipelines.yml`: install, lint, build and publish the built site on every push / PR to `main`, and deploy it on every merge to `main` |
+| **T-01** Deploy online *(optional)* | Hosted as an Azure Storage static website, deployed by the pipeline. The mock APIs only allow `localhost:3000`, so API calls work locally only (see [Deployment](#deployment-t-01)) |
 
 Extras: clear-form button, warning before leaving the form with unsaved input, status badges, accessible markup (labels, `aria-*` attributes, keyboard support), per-page browser titles.
 
@@ -31,7 +34,7 @@ Extras: clear-form button, warning before leaving the form with unsaved input, s
 - **React Router** (data router, needed for the leave-page warning)
 - Plain **`useState` / `useEffect` / `fetch`** and **plain CSS**, with no UI or state-management libraries, to keep the solution small and easy to follow
 - **ESLint** for code quality
-- **Git + GitHub** for source control, **Azure Pipelines** for CI
+- **Git + GitHub** for source control, **Azure Pipelines** for CI/CD, **Azure Storage** static website for hosting
 
 ---
 
@@ -96,6 +99,9 @@ src/
     ├── layout/                     # AppLayout, Topbar, Sidebar (responsive menu)
     ├── certificates/               # Request form, FormField (✓/✕ + error), leave-page dialog
     └── requests/                   # Requests table (sorting, filter row), AutoGrowInput
+
+scripts/
+└── deploy-to-storage.mjs           # Used by the pipeline: uploads dist/ to the Azure Storage static website
 ```
 
 **Design choices**
@@ -135,21 +141,53 @@ The case study leaves some details open. These are the choices made:
 
 ## API key and security note
 
-The keys are kept out of Git (`.env` is git-ignored; CI uses secret pipeline variables). However, **in a front-end-only app the keys are still visible in the browser**: Vite builds them into the JavaScript, and they appear in the request URL in the Network tab. For a real product, the API would be called through a small back end (proxy) that holds the key. That is outside the scope of this MVP, and the provided APIs are mocks.
+The keys are kept out of Git (`.env` is git-ignored). However, **in a front-end-only app the keys are visible in the browser** when the app runs: Vite builds them into the JavaScript, and they appear in the request URL in the Network tab. For a real product, the API would be called through a small back end (proxy) that holds the key. That is outside the scope of this MVP, and the provided APIs are mocks.
+
+For the same reason, **the publicly deployed build does not contain the API keys** (see [Deployment](#deployment-t-01)).
 
 ---
 
-## CI: Azure Pipelines
+## CI/CD: Azure Pipelines
 
 `azure-pipelines.yml` runs on every push to `main` and every pull request into `main`:
 
-1. Use Node.js 24
+1. Use Node.js 24 (`UseNode@1`)
 2. `npm ci`: install the exact versions from `package-lock.json`
 3. `npm run lint`
-4. `npm run build`: API settings are passed in from pipeline variables (keys marked secret)
+4. `npm run build`
 5. Publish `dist/` as the pipeline artifact `web`
+6. **On `main` only:** deploy `dist/` to the Azure Storage static website (skipped for pull requests)
 
-New Azure DevOps organisations don't get free Microsoft-hosted agents until Microsoft approves a request, so the pipeline currently runs on a **self-hosted agent** (`pool: name: Default`). Once hosted agents are granted, switching back is a one-line change to `vmImage: ubuntu-latest` (see the comment in the file).
+New Azure DevOps organisations don't get free Microsoft-hosted agents until Microsoft approves a request, so the pipeline currently runs on a **self-hosted agent** (`pool: name: Default`). Once hosted agents are granted, switching back is a one-line change to `vmImage: ubuntu-latest` (see the comment in the file). The agent only needs to be running while a pipeline runs; the deployed site is hosted by Azure and is always online.
+
+**Pipeline variables** (set in Azure DevOps, not in the repo):
+
+| Variable | Secret | Used by |
+|---|---|---|
+| `VITE_API_BASE_URL` | no | Build |
+| `AZURE_STORAGE_CONNECTION_STRING` | yes | Deploy step |
+
+---
+
+## Deployment (T-01)
+
+**Live site:** https://fabhrportal26.z1.web.core.windows.net/
+
+The site is hosted as an **Azure Storage static website**, and the pipeline deploys it automatically after every merge to `main`:
+
+- `scripts/deploy-to-storage.mjs` uploads `dist/` to the storage account's `$web` container, using the official `@azure/storage-blob` SDK. It sets the correct content type for each file and caching headers (`index.html` is never cached; the hashed files in `assets/` are cached for a year), and it removes files left over from earlier deployments.
+- The static website's **error document is `index.html`**, so deep links and refreshes (e.g. `/requests`) are served by the React app instead of an error page. (Technically those responses still carry HTTP status 404, which is how Storage serves its error document. Users don't notice, but monitoring tools or search engines would. A host with SPA routing rules, like Azure Static Web Apps, returns 200.)
+- Why Azure Storage and not Azure Static Web Apps: Static Web Apps is not available in the regions allowed by the Azure for Students subscription used here. (The standard Static Web Apps deploy task also only runs on Linux agents, while the self-hosted agent is Windows.)
+
+### Known limitation: the API calls don't work on the live site
+
+The mock APIs only accept browser requests from **`http://localhost:3000`** (their CORS policy returns `Access-Control-Allow-Origin: http://localhost:3000`). On the hosted URL, the browser blocks the responses, so the live site shows its error states (*"We couldn't load your requests"*, and an error message on submit). The navigation, layout, form validation and responsive design can all be checked on the live site. **For the full experience, including the API calls, run the app locally** (see [Getting started](#getting-started)).
+
+Because the API calls can't succeed there anyway, the **deployed build is made without the API keys**, so they are not published on a public website.
+
+How this would be solved in a real project:
+1. **Ask the API owners to allow the deployed origin** in the API's CORS policy (a configuration change in their Azure API Management). This is the normal fix.
+2. **Or put a small back-end proxy in front of the API** (e.g. an Azure Function). The browser calls the proxy, and the proxy calls the API server-to-server, where CORS doesn't apply. This would also keep the API key off the client. It is not done here because building back-end APIs is out of scope for the case study.
 
 ---
 
